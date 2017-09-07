@@ -36,8 +36,8 @@ To create a Feed simply add:
 
 Feed = new FeedComponent
 	# optional parameters
-	spacing = 	** default: 10
-	start_y =  	** default: 10
+	spacing: 	** default: 10
+	start_y:  	** default: 10
 	
 	# + all other ScrollComponent parameters
 

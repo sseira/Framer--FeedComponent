@@ -1,6 +1,6 @@
 class FeedComponent extends ScrollComponent
 	constructor: (@options={}) ->
-		@spacing = if @options.spacing then @options.spacing else 5
+		@spacing = if @options.spacing then @options.spacing else 10
 		@start_y =  if @options.start_y then @options.start_y else @spacing
 		@nextItem_y = @start_y
 		@items = if @options.items then @options.items else []
@@ -9,7 +9,9 @@ class FeedComponent extends ScrollComponent
 		@.backgroundColor = if @options.backgroundColor then @options.backgroundColor else "#FFFFFF"
 		@.scrollHorizontal = false
 		@.name =  if @options.name then @options.name else 'FeedComponent'
+		@.size = if @options.size then @options.size else Screen.size
 		@.content.width = Screen.width
+
 
 		if @items 
 			@positionItems()
@@ -50,6 +52,7 @@ class FeedComponent extends ScrollComponent
 	addItem: (item, callback, options) ->
 		item.x = 0
 		item.parent = @.content
+		item.options = options
 		item.centerX()
 		item.y = @.nextItem_y
 		@.items.push(item)
@@ -64,8 +67,9 @@ class FeedComponent extends ScrollComponent
 					time: 1.5
 					
 		item.onTapEnd ->
-			if callback
-				callback(item, options)
+			if item.parent.parent.isDragging is false
+				if callback
+					callback(item, options)
 			
 		@addItemListeners(item)
 		@addShadowToItem(item)
@@ -75,7 +79,7 @@ class FeedComponent extends ScrollComponent
 		that = @
 		item.onSwipeLeftEnd ->
 			that.hideItem(this)
-		
+
 		# sanity check that touch was recognized
 		item.onTapStart ->
 			animateTap = new Animation item,
@@ -90,14 +94,24 @@ class FeedComponent extends ScrollComponent
 				animateTap.reverse().start()
 	
 
-	addOverflowButtonToItem: (item, button, callback) ->
+	addOverflowButtonToItem: (chosenItem, button, callback) ->
+		itemIndex = @.items.indexOf(chosenItem)
+
+		if itemIndex == -1 
+			return
+
+		item = @.items[itemIndex]
+		item = chosenItem
+
+		button.x = 0
 		button.parent = item.parent
 		button.y = item.y
 		button.x = item.x + item.width - button.width
+
 		button.bringToFront()
 
 		button.on Events.Tap, (e) ->
-			callback(item)
+			callback(item, item.options)
 
 		button.states = 
 			deleted:
@@ -116,8 +130,6 @@ class FeedComponent extends ScrollComponent
 	hideItem: (chosenItem) ->
 		itemIndex = @.items.indexOf(chosenItem)
 		@.items.splice(itemIndex, 1)
-		
-
 		chosenItem.animate('deleted')
 		if chosenItem.button
 			chosenItem.button.animate('deleted')
@@ -138,9 +150,8 @@ class FeedComponent extends ScrollComponent
 		@nextItem_y = @start_y 	
 		for item in @items
 			item.x = 0
-			item.parent = @content
+			item.parent = @.content
 			item.centerX()
-
 			item.animate 
 				y : @nextItem_y
 
