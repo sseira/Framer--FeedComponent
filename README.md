@@ -1,4 +1,4 @@
-# Framer HTTP Request Module
+# Framer FeedComponent Module
 
 A [Framer](http://framerjs.com) module that makes it simple to create a Feed view where the user can scroll through and interact with different Card objects. 
 The default Feed can have Cards added and removed.
